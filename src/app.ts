@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import personasRouter from "./routes/personas";
+import organismosRouter from "./routes/organismos";
 
 const bootstrap = async () => {
   const app = express();
@@ -15,6 +16,7 @@ const bootstrap = async () => {
   );
 
   app.use("/api/personas/", personasRouter);
+  app.use("/api/organismos/", organismosRouter);
 
   app.listen(port, () => {
     console.log(`App levantada en puerto ${port}`);
