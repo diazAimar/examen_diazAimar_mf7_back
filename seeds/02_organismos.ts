@@ -3,6 +3,7 @@ import type { Knex } from "knex";
 export async function seed(knex: Knex): Promise<void> {
   await knex("organismos").insert([
     {
+      id: 1,
       codigo: "JNQEJ",
       nombre: "Juzgado de Ejecución Neuquén",
       caratula: "Juzgado de Ejecución Neuquén",
@@ -10,6 +11,7 @@ export async function seed(knex: Knex): Promise<void> {
       fuero: "Ejecutivos",
     },
     {
+      id: 2,
       codigo: "JNQCI",
       nombre: "Juzgado Civil Neuquén",
       caratula: "Juzgado Civil Neuquén",
@@ -17,6 +19,7 @@ export async function seed(knex: Knex): Promise<void> {
       fuero: "Civil",
     },
     {
+      id: 3,
       codigo: "JNQLA",
       nombre: "Juzgado Laboral Neuquén",
       caratula: "Juzgado Laboral Neuquén",
@@ -24,6 +27,7 @@ export async function seed(knex: Knex): Promise<void> {
       fuero: "Laboral",
     },
     {
+      id: 4,
       codigo: "JNQFA",
       nombre: "Juzgado de Familia Neuquén",
       caratula: "Juzgado de Familia Neuquén",
@@ -31,6 +35,7 @@ export async function seed(knex: Knex): Promise<void> {
       fuero: "Familia",
     },
     {
+      id: 5,
       codigo: "JZAEJ",
       nombre: "Juzgado de Ejecución Zapala",
       caratula: "Juzgado de Ejecución Zapala",
@@ -38,6 +43,7 @@ export async function seed(knex: Knex): Promise<void> {
       fuero: "Ejecutivos",
     },
     {
+      id: 6,
       codigo: "JZACI",
       nombre: "Juzgado Civil Zapala",
       caratula: "Juzgado Civil Zapala",
@@ -45,6 +51,7 @@ export async function seed(knex: Knex): Promise<void> {
       fuero: "Civil",
     },
     {
+      id: 7,
       codigo: "JZALA",
       nombre: "Juzgado Laboral Zapala",
       caratula: "Juzgado Laboral Zapala",
@@ -52,6 +59,7 @@ export async function seed(knex: Knex): Promise<void> {
       fuero: "Laboral",
     },
     {
+      id: 8,
       codigo: "JZAFA",
       nombre: "Juzgado de Familia Zapala",
       caratula: "Juzgado de Familia Zapala",
@@ -59,6 +67,7 @@ export async function seed(knex: Knex): Promise<void> {
       fuero: "Familia",
     },
     {
+      id: 9,
       codigo: "JJUEJ",
       nombre: "Juzgado de Ejecución Junín de los Andes",
       caratula: "Juzgado de Ejecución Junín de los Andes",
@@ -66,6 +75,7 @@ export async function seed(knex: Knex): Promise<void> {
       fuero: "Ejecutivos",
     },
     {
+      id: 10,
       codigo: "JJUCI",
       nombre: "Juzgado Civil Junín de los Andes",
       caratula: "Juzgado Civil Junín de los Andes",
@@ -73,6 +83,7 @@ export async function seed(knex: Knex): Promise<void> {
       fuero: "Civil",
     },
     {
+      id: 11,
       codigo: "JJULA",
       nombre: "Juzgado Laboral Junín de los Andes",
       caratula: "Juzgado Laboral Junín de los Andes",
@@ -80,6 +91,7 @@ export async function seed(knex: Knex): Promise<void> {
       fuero: "Laboral",
     },
     {
+      id: 12,
       codigo: "JJUFA",
       nombre: "Juzgado de Familia Junín de los Andes",
       caratula: "Juzgado de Familia Junín de los Andes",
