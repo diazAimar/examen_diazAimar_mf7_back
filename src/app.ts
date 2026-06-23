@@ -1,12 +1,26 @@
 import express, { Request, Response } from "express";
+import cors from "cors";
+import personasRouter from "./routes/personas";
 
-const app = express();
-const port = 3000;
+const bootstrap = async () => {
+  const app = express();
+  const port = 8000;
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World!");
-});
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(
+    cors({
+      origin: "http://localhost:5173",
+    }),
+  );
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  app.use("/api/personas/", personasRouter);
+
+  app.listen(port, () => {
+    console.log(`App levantada en puerto ${port}`);
+  });
+};
+
+bootstrap().catch((error) => {
+  console.log(error);
 });
