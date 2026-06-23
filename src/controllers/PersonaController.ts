@@ -7,10 +7,10 @@ import {
   dniParamSchema,
   ICreatePersonaSchema,
   IDniParamSchema,
-  IIdParamSchema,
   IUpdatePersonaSchema,
   updatePersonaSchema,
 } from "../schemas/personas.schema";
+import { IIdParamSchema } from "../schemas/shared.schema";
 
 export class PersonaController {
   get = async (req: Request, res: Response) => {
