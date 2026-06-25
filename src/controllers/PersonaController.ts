@@ -22,7 +22,6 @@ export class PersonaController {
       const personas = await db
         .select("*")
         .from("personas")
-        .whereNull("deleted_at");
       return sendResponse({ res: res, data: personas });
     } catch (error) {
       return sendResponse({
