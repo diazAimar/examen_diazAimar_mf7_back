@@ -1,30 +1,28 @@
 import Joi from "joi";
 
 export interface ICreatePersonaSchema {
-  dni: string;
+  dni: number;
   nombre: string;
   apellido: string;
 }
 
 export interface IUpdatePersonaSchema {
   id: number;
-  dni?: string;
+  dni?: number;
   nombre?: string;
   apellido?: string;
 }
 
 export const createPersonaSchema = Joi.object<ICreatePersonaSchema>({
-  dni: Joi.string()
-    .pattern(/^\d{7,8}$/)
-    .required()
-    .messages({
-      "any.required": "El DNI de la persona es requerido",
-      "string.base":
-        "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
-      "string.empty": "El DNI de la persona es requerido",
-      "string.pattern.base":
-        "El DNI de la persona debe tener entre 7 y 8 digitos (sin puntos)",
-    }),
+  dni: Joi.number().integer().positive().required().messages({
+    "any.required": "El DNI de la persona es requerido",
+    "number.base":
+      "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
+    "number.integer":
+      "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
+    "number.positive":
+      "El DNI de la persona debe tener entre 7 y 8 digitos (sin puntos)",
+  }),
   nombre: Joi.string().required().messages({
     "any.required": "El nombre de la persona es requerido",
     "string.empty": "El nombre de la persona es requerido",
@@ -42,16 +40,14 @@ export const updatePersonaSchema = Joi.object<IUpdatePersonaSchema>({
     "number.integer": "El id de la persona debe ser un numero entero positivo",
     "number.positive": "El id de la persona debe ser un numero entero positivo",
   }),
-  dni: Joi.string()
-    .pattern(/^\d{7,8}$/)
-    .optional()
-    .messages({
-      "string.base":
-        "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
-      "string.empty": "El DNI de la persona es requerido",
-      "string.pattern.base":
-        "El DNI de la persona debe tener entre 7 y 8 digitos (sin puntos)",
-    }),
+  dni: Joi.number().integer().positive().optional().messages({
+    "number.base":
+      "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
+    "number.integer":
+      "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
+    "number.positive":
+      "El DNI de la persona debe tener entre 7 y 8 digitos (sin puntos)",
+  }),
   nombre: Joi.string().optional().messages({
     "string.empty": "El nombre de la persona es requerido",
   }),
