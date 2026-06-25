@@ -3,6 +3,7 @@ import cors from "cors";
 import personasRouter from "./routes/personas";
 import organismosRouter from "./routes/organismos";
 import tiposVinculoRouter from "./routes/tipos-vinculo";
+import expedientesRouter from "./routes/expedientes";
 
 const bootstrap = async () => {
   const app = express();
@@ -19,6 +20,7 @@ const bootstrap = async () => {
   app.use("/api/personas/", personasRouter);
   app.use("/api/organismos/", organismosRouter);
   app.use("/api/tipos-vinculo/", tiposVinculoRouter);
+  app.use("/api/expedientes/", expedientesRouter);
 
   app.listen(port, () => {
     console.log(`App levantada en puerto ${port}`);

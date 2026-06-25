@@ -1,6 +1,11 @@
 import Joi from "joi";
+import { IIdParamSchema } from "./shared.schema";
 
-const CIUDADES_ORGANISMO = ["Neuquén", "Zapala", "Junín de los Andes"] as const;
+export const CIUDADES_ORGANISMO = [
+  "Neuquén",
+  "Zapala",
+  "Junín de los Andes",
+] as const;
 const FUEROS_ORGANISMO = ["Ejecutivos", "Civil", "Laboral", "Familia"] as const;
 
 export type CiudadOrganismo = (typeof CIUDADES_ORGANISMO)[number];
@@ -11,10 +16,6 @@ export const CIUDAD_CODIGO: Record<CiudadOrganismo, string> = {
   Zapala: "ZA",
   "Junín de los Andes": "JU",
 };
-
-export interface IIdParamSchema {
-  id: number;
-}
 
 export interface ICreateOrganismoSchema {
   nombre: string;
