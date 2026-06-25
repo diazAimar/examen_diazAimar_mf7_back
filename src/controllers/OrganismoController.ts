@@ -159,13 +159,11 @@ export class OrganismoController {
         "J" +
         CIUDAD_CODIGO[value.ciudad] +
         value.fuero.substring(0, 2).toUpperCase();
-      console.log(value);
+
       const codigoExists = await db("organismos")
         .where("codigo", codigo)
         .where("id", "<>", value.id)
         .first();
-
-      console.log(codigo, codigoExists);
 
       if (codigoExists) {
         return sendResponse({
