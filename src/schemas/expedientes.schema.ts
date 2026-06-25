@@ -5,15 +5,25 @@ const TIPOS_EXPEDIENTE = ["EXP", "LEG"] as const;
 
 export type TipoExpediente = (typeof TIPOS_EXPEDIENTE)[number];
 
-const dniSchema = Joi.number().integer().positive().required().messages({
-  "any.required": "El DNI de la persona es requerido",
-  "number.base":
-    "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
-  "number.integer":
-    "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
-  "number.positive":
-    "El DNI de la persona debe tener entre 7 y 8 digitos (sin puntos)",
-});
+const dniSchema = Joi.number()
+  .integer()
+  .positive()
+  .min(1000000)
+  .max(99999999)
+  .required()
+  .messages({
+    "any.required": "El DNI de la persona es requerido",
+    "number.base":
+      "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
+    "number.integer":
+      "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
+    "number.positive":
+      "El DNI de la persona debe tener entre 7 y 8 digitos (sin puntos)",
+    "number.min":
+      "El DNI de la persona debe tener entre 7 y 8 digitos (sin puntos)",
+    "number.max":
+      "El DNI de la persona debe tener entre 7 y 8 digitos (sin puntos)",
+  });
 
 const personaSchema = Joi.object({
   dni: dniSchema,

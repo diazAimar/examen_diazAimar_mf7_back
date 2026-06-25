@@ -40,12 +40,16 @@ export const updatePersonaSchema = Joi.object<IUpdatePersonaSchema>({
     "number.integer": "El id de la persona debe ser un numero entero positivo",
     "number.positive": "El id de la persona debe ser un numero entero positivo",
   }),
-  dni: Joi.number().integer().positive().optional().messages({
+  dni: Joi.number().integer().positive().min(1000000).max(99999999).messages({
     "number.base":
       "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
     "number.integer":
       "El DNI de la persona debe ser un numero entero positivo (sin puntos)",
     "number.positive":
+      "El DNI de la persona debe tener entre 7 y 8 digitos (sin puntos)",
+    "number.min":
+      "El DNI de la persona debe tener entre 7 y 8 digitos (sin puntos)",
+    "number.max":
       "El DNI de la persona debe tener entre 7 y 8 digitos (sin puntos)",
   }),
   nombre: Joi.string().optional().messages({
