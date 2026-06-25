@@ -1,4 +1,5 @@
 import type { Knex } from "knex";
+import { addAuditColumns } from "../src/utils/addAuditColumns";
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("expediente_persona", (table) => {
@@ -24,7 +25,10 @@ export async function up(knex: Knex): Promise<void> {
       .references("id")
       .inTable("tipos_vinculo");
     table.unique(["expediente_id", "persona_id", "tipo_vinculo_id"]);
+    addAuditColumns(table, knex);
   });
 }
 
-export async function down(knex: Knex): Promise<void> {}
+export async function down(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists("expediente_persona");
+}

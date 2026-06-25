@@ -1,4 +1,5 @@
 import { Knex } from "knex";
+import { addAuditColumns } from "../src/utils/addAuditColumns";
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("expedientes", (table) => {
@@ -14,6 +15,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string("caratula").notNullable();
     table.string("ciudad").notNullable();
     table.unique(["codigo_organismo", "tipo", "numero", "anno"]);
+    addAuditColumns(table, knex);
   });
 }
 
