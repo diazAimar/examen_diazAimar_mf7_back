@@ -10,6 +10,7 @@ import {
   IPersonaExpedienteSchema,
 } from "../schemas/expedientes.schema";
 import { idParamSchema, IIdParamSchema } from "../schemas/shared.schema";
+import { now, timestampsOnUpdate } from "../database/queryHelpers";
 
 export class ExpedienteController {
   private resolveOrCreatePersona = async (
@@ -522,6 +523,91 @@ export class ExpedienteController {
       });
 
       return sendResponse({ res, data: result, status: 201 });
+    } catch (error) {
+      return sendResponse({
+        res,
+        error: `Ocurrió un error inesperado. Por favor, intente nuevamente. Error: ${error}`,
+        status: 500,
+      });
+    }
+  };
+
+  delete = async (req: Request<IIdParamSchema, {}, {}>, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const { error, value } = await idParamSchema.validate({ id });
+
+      if (error) {
+        return handleValidationErrors(res, error);
+      }
+
+      const timestamp = now();
+      const deleted = await db("expedientes")
+        .where("id", value.id)
+        .whereNull("deleted_at")
+        .update({ deleted_at: timestamp, updated_at: timestamp });
+
+      if (!deleted) {
+        return sendResponse({
+          res,
+          error: "Expediente inexistente",
+          status: 404,
+        });
+      }
+
+      return sendResponse({ res, data: null });
+    } catch (error) {
+      return sendResponse({
+        res,
+        error: `Ocurrió un error inesperado. Por favor, intente nuevamente. Error: ${error}`,
+        status: 500,
+      });
+    }
+  };
+
+  restore = async (req: Request<IIdParamSchema, {}, {}>, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const { error, value } = await idParamSchema.validate({ id });
+
+      if (error) {
+        return handleValidationErrors(res, error);
+      }
+
+      const expediente = await db("expedientes")
+        .where("id", value.id)
+        .whereNotNull("deleted_at")
+        .first();
+
+      if (!expediente) {
+        return sendResponse({
+          res,
+          error: "Expediente inexistente o no eliminado",
+          status: 404,
+        });
+      }
+
+      const organismo = await db("organismos")
+        .where("codigo", expediente.codigo_organismo)
+        .first();
+
+      if (!organismo || organismo.deleted_at !== null) {
+        return sendResponse({
+          res,
+          status: 422,
+          error:
+            "No se puede restaurar el expediente porque su organismo está eliminado. Restaure primero el organismo.",
+        });
+      }
+
+      const [restored] = await db("expedientes")
+        .where("id", value.id)
+        .update({ deleted_at: null, ...timestampsOnUpdate() })
+        .returning("*");
+
+      return sendResponse({ res, data: restored });
     } catch (error) {
       return sendResponse({
         res,

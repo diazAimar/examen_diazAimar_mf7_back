@@ -10,6 +10,7 @@ import {
   updateOrganismoSchema,
 } from "../schemas/organismos.schema";
 import { idParamSchema, IIdParamSchema } from "../schemas/shared.schema";
+import { now, timestampsOnUpdate } from "../database/queryHelpers";
 
 export class OrganismoController {
   get = async (req: Request, res: Response) => {
@@ -91,6 +92,7 @@ export class OrganismoController {
 
       const codigoExists = await db("organismos")
         .where("codigo", codigo)
+        .whereNull("deleted_at")
         .first();
 
       if (codigoExists) {
@@ -163,6 +165,7 @@ export class OrganismoController {
       const codigoExists = await db("organismos")
         .where("codigo", newCodigo)
         .where("id", "<>", value.id)
+        .whereNull("deleted_at")
         .first();
 
       if (codigoExists) {
@@ -178,7 +181,10 @@ export class OrganismoController {
         });
       }
 
-      const existing = await db("organismos").where("id", id).first();
+      const existing = await db("organismos")
+        .where("id", id)
+        .whereNull("deleted_at")
+        .first();
 
       if (!existing) {
         return sendResponse({
@@ -215,6 +221,99 @@ export class OrganismoController {
     } catch (error) {
       return sendResponse({
         res: res,
+        error: `Ocurrió un error inesperado. Por favor, intente nuevamente. Error: ${error}`,
+        status: 500,
+      });
+    }
+  };
+
+  delete = async (req: Request<IIdParamSchema, {}, {}>, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const { error, value } = await idParamSchema.validate({ id });
+
+      if (error) {
+        return handleValidationErrors(res, error);
+      }
+
+      const organismo = await db("organismos")
+        .where("id", value.id)
+        .whereNull("deleted_at")
+        .first();
+
+      if (!organismo) {
+        return sendResponse({
+          res,
+          error: "Organismo inexistente",
+          status: 404,
+        });
+      }
+
+      const timestamp = now();
+
+      await db.transaction(async (trx) => {
+        await trx("organismos")
+          .where("id", value.id)
+          .update({ deleted_at: timestamp, updated_at: timestamp });
+
+        await trx("expedientes")
+          .where("codigo_organismo", organismo.codigo)
+          .whereNull("deleted_at")
+          .update({ deleted_at: timestamp, updated_at: timestamp });
+      });
+
+      return sendResponse({ res, data: null });
+    } catch (error) {
+      return sendResponse({
+        res,
+        error: `Ocurrió un error inesperado. Por favor, intente nuevamente. Error: ${error}`,
+        status: 500,
+      });
+    }
+  };
+
+  restore = async (req: Request<IIdParamSchema, {}, {}>, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const { error, value } = await idParamSchema.validate({ id });
+
+      if (error) {
+        return handleValidationErrors(res, error);
+      }
+
+      const organismo = await db("organismos")
+        .where("id", value.id)
+        .whereNotNull("deleted_at")
+        .first();
+
+      if (!organismo) {
+        return sendResponse({
+          res,
+          error: "Organismo inexistente o no eliminado",
+          status: 404,
+        });
+      }
+
+      const [restored] = await db.transaction(async (trx) => {
+        const result = await trx("organismos")
+          .where("id", value.id)
+          .update({ deleted_at: null, ...timestampsOnUpdate() })
+          .returning("*");
+
+        await trx("expedientes")
+          .where("codigo_organismo", organismo.codigo)
+          .whereNotNull("deleted_at")
+          .update({ deleted_at: null, ...timestampsOnUpdate() });
+
+        return result;
+      });
+
+      return sendResponse({ res, data: restored });
+    } catch (error) {
+      return sendResponse({
+        res,
         error: `Ocurrió un error inesperado. Por favor, intente nuevamente. Error: ${error}`,
         status: 500,
       });

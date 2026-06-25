@@ -9,5 +9,7 @@ expedientesRouter.get("/estadisticas", expedienteController.estadisticas);
 expedientesRouter.post("/", expedienteController.post);
 expedientesRouter.get("/:id", expedienteController.getById);
 expedientesRouter.patch("/:id", expedienteController.patch);
+expedientesRouter.delete("/:id", expedienteController.delete);
+expedientesRouter.patch("/:id/restore", expedienteController.restore);
 
 export default expedientesRouter;
