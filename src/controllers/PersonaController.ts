@@ -10,11 +10,19 @@ import {
   updatePersonaSchema,
 } from "../schemas/personas.schema";
 import { idParamSchema, IIdParamSchema } from "../schemas/shared.schema";
+import {
+  now,
+  timestampsOnInsert,
+  timestampsOnUpdate,
+} from "../database/queryHelpers";
 
 export class PersonaController {
   get = async (req: Request, res: Response) => {
     try {
-      const personas = await db.select("*").from("personas");
+      const personas = await db
+        .select("*")
+        .from("personas")
+        .whereNull("deleted_at");
       return sendResponse({ res: res, data: personas });
     } catch (error) {
       return sendResponse({
@@ -51,7 +59,9 @@ export class PersonaController {
         });
       }
 
-      const expedientesRows = await db("expediente_persona as ep")
+      const expedientesRows = await db
+        .select("*")
+        .from("expediente_persona as ep")
         .join("expedientes as e", "e.id", "ep.expediente_id")
         .join("organismos as o", "e.codigo_organismo", "o.codigo")
         .join("tipos_vinculo as tv", "tv.id", "ep.tipo_vinculo_id")
@@ -131,7 +141,10 @@ export class PersonaController {
 
       const dniNumber = Number(value.dni);
 
-      const dniExists = await db("personas").where("dni", dniNumber).first();
+      const dniExists = await db("personas")
+        .where("dni", dniNumber)
+        .whereNull("deleted_at")
+        .first();
 
       if (dniExists) {
         return sendResponse({
@@ -148,6 +161,7 @@ export class PersonaController {
           dni: dniNumber,
           nombre: value.nombre,
           apellido: value.apellido,
+          ...timestampsOnInsert(),
         })
         .returning("*");
 
@@ -187,7 +201,11 @@ export class PersonaController {
 
       const dniNumber = Number(value.dni);
 
-      const dniExists = await db("personas").where("dni", dniNumber).first();
+      const dniExists = await db("personas")
+        .where("dni", dniNumber)
+        .whereNot("id", value.id)
+        .whereNull("deleted_at")
+        .first();
 
       if (dniExists) {
         return sendResponse({
@@ -199,12 +217,14 @@ export class PersonaController {
         });
       }
 
-      const persona = await db("personas")
+      const [persona] = await db("personas")
         .where("id", id)
+        .whereNull("deleted_at")
         .update({
           dni: dniNumber,
           nombre: value.nombre,
           apellido: value.apellido,
+          ...timestampsOnUpdate(),
         })
         .returning("*");
 
@@ -220,6 +240,74 @@ export class PersonaController {
     } catch (error) {
       return sendResponse({
         res: res,
+        error: `Ocurrió un error inesperado. Por favor, intente nuevamente. Error: ${error}`,
+        status: 500,
+      });
+    }
+  };
+
+  delete = async (req: Request<IIdParamSchema, {}, {}>, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const { error, value } = await idParamSchema.validate({ id });
+
+      if (error) {
+        return handleValidationErrors(res, error);
+      }
+
+      const timestamp = now();
+      const deleted = await db("personas")
+        .where({ id: value.id })
+        .whereNull("deleted_at")
+        .update({ deleted_at: timestamp, updated_at: timestamp });
+
+      if (!deleted) {
+        return sendResponse({
+          res,
+          error: "Persona inexistente",
+          status: 404,
+        });
+      }
+
+      return sendResponse({ res, data: null });
+    } catch (error) {
+      return sendResponse({
+        res,
+        error: `Ocurrió un error inesperado. Por favor, intente nuevamente. Error: ${error}`,
+        status: 500,
+      });
+    }
+  };
+
+  restore = async (req: Request<IIdParamSchema, {}, {}>, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      const { error, value } = await idParamSchema.validate({ id });
+
+      if (error) {
+        return handleValidationErrors(res, error);
+      }
+
+      const [persona] = await db("personas")
+        .where({ id: value.id })
+        .whereNotNull("deleted_at")
+        .update({ deleted_at: null, updated_at: now() })
+        .returning("*");
+
+      if (!persona) {
+        return sendResponse({
+          res,
+          error: "Persona inexistente o no eliminada",
+          status: 404,
+        });
+      }
+
+      return sendResponse({ res, data: persona });
+    } catch (error) {
+      return sendResponse({
+        res,
         error: `Ocurrió un error inesperado. Por favor, intente nuevamente. Error: ${error}`,
         status: 500,
       });

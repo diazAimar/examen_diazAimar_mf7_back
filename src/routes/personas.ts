@@ -8,5 +8,7 @@ personasRouter.get("/", personaController.get);
 personasRouter.get("/:id", personaController.getById);
 personasRouter.post("/", personaController.post);
 personasRouter.patch("/:id", personaController.patch);
+personasRouter.delete("/:id", personaController.delete);
+personasRouter.patch("/:id/restore", personaController.restore);
 
 export default personasRouter;
