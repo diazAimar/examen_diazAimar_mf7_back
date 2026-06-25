@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { db } from "../database/db";
 import { sendResponse } from "../utils/sendResponse";
 import { handleValidationErrors } from "../utils/handleValidationErrors";
+import { formatExpedienteClave } from "../utils/formatExpedienteClave";
 import {
   createPersonaSchema,
   ICreatePersonaSchema,
@@ -50,7 +51,56 @@ export class PersonaController {
         });
       }
 
-      return sendResponse({ res: res, data: persona });
+      const expedientesRows = await db("expediente_persona as ep")
+        .join("expedientes as e", "e.id", "ep.expediente_id")
+        .join("organismos as o", "e.codigo_organismo", "o.codigo")
+        .join("tipos_vinculo as tv", "tv.id", "ep.tipo_vinculo_id")
+        .where("ep.persona_id", Number(value.id))
+        .select(
+          "e.id",
+          "e.codigo_organismo",
+          "e.tipo",
+          "e.numero",
+          "e.anno",
+          "e.caratula",
+          "e.ciudad",
+          "o.id as organismo_id",
+          "o.nombre as organismo_nombre",
+          "o.fuero as organismo_fuero",
+          "tv.id as tipo_vinculo_id",
+          "tv.descripcion as tipo_vinculo_descripcion",
+        )
+        .orderBy("e.id");
+
+      const expedientes = expedientesRows.map(
+        ({
+          organismo_id,
+          organismo_nombre,
+          organismo_fuero,
+          tipo_vinculo_id,
+          tipo_vinculo_descripcion,
+          ...expediente
+        }) => ({
+          ...expediente,
+          clave: formatExpedienteClave(
+            expediente.codigo_organismo,
+            expediente.tipo,
+            expediente.numero,
+            expediente.anno,
+          ),
+          organismo: {
+            id: organismo_id,
+            nombre: organismo_nombre,
+            fuero: organismo_fuero,
+          },
+          tipo_vinculo: {
+            id: tipo_vinculo_id,
+            descripcion: tipo_vinculo_descripcion,
+          },
+        }),
+      );
+
+      return sendResponse({ res: res, data: { ...persona, expedientes } });
     } catch (error) {
       return sendResponse({
         res: res,

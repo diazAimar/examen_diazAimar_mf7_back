@@ -3,6 +3,7 @@ import { Knex } from "knex";
 import { db } from "../database/db";
 import { sendResponse } from "../utils/sendResponse";
 import { handleValidationErrors } from "../utils/handleValidationErrors";
+import { formatExpedienteClave } from "../utils/formatExpedienteClave";
 import {
   createExpedienteSchema,
   ICreateExpedienteSchema,
@@ -74,6 +75,12 @@ export class ExpedienteController {
 
     return {
       ...expedienteData,
+      clave: formatExpedienteClave(
+        expedienteData.codigo_organismo as string,
+        expedienteData.tipo as string,
+        expedienteData.numero as number,
+        expedienteData.anno as number,
+      ),
       organismo: {
         id: organismo.id,
         nombre: organismo.nombre,
@@ -85,7 +92,84 @@ export class ExpedienteController {
   get = async (req: Request, res: Response) => {
     try {
       const expedientes = await db("expedientes").select("*");
-      return sendResponse({ res, data: expedientes });
+
+      return sendResponse({
+        res,
+        data: expedientes.map(
+          ({ codigo_organismo, tipo, numero, anno, ...rest }) => ({
+            ...rest,
+            codigo_organismo,
+            tipo,
+            numero,
+            anno,
+            clave: formatExpedienteClave(codigo_organismo, tipo, numero, anno),
+          }),
+        ),
+      });
+    } catch (error) {
+      return sendResponse({
+        res,
+        error: `Ocurrió un error inesperado. Por favor, intente nuevamente. Error: ${error}`,
+        status: 500,
+      });
+    }
+  };
+
+  estadisticas = async (_req: Request, res: Response) => {
+    try {
+      const porAnno = await db("expedientes")
+        .select("anno")
+        .count<{ anno: number; cantidad: number | string }[]>("id as cantidad")
+        .groupBy("anno")
+        .orderBy("anno", "asc");
+
+      const porCiudad = await db("expedientes")
+        .select("ciudad")
+        .count<
+          { ciudad: string; cantidad: number | string }[]
+        >("id as cantidad")
+        .groupBy("ciudad")
+        .orderBy("ciudad", "asc");
+
+      const porFuero = await db("expedientes as e")
+        .join("organismos as o", "e.codigo_organismo", "o.codigo")
+        .select("o.fuero as fuero")
+        .count<
+          { fuero: string; cantidad: number | string }[]
+        >("e.id as cantidad")
+        .groupBy("o.fuero")
+        .orderBy("o.fuero", "asc");
+
+      const general = await db("expedientes as e")
+        .join("organismos as o", "e.codigo_organismo", "o.codigo")
+        .select("e.anno as anno", "e.ciudad as ciudad", "o.fuero as fuero")
+        .count<
+          {
+            anno: number;
+            ciudad: string;
+            fuero: string;
+            cantidad: number | string;
+          }[]
+        >("e.id as cantidad")
+        .groupBy("e.anno", "e.ciudad", "o.fuero")
+        .orderBy([
+          { column: "e.anno", order: "asc" },
+          { column: "e.ciudad", order: "asc" },
+          { column: "o.fuero", order: "asc" },
+        ]);
+
+      const toNumber = <T extends { cantidad: number | string }>(rows: T[]) =>
+        rows.map((row) => ({ ...row, cantidad: Number(row.cantidad) }));
+
+      return sendResponse({
+        res,
+        data: {
+          por_anno: toNumber(porAnno),
+          por_ciudad: toNumber(porCiudad),
+          por_fuero: toNumber(porFuero),
+          general: toNumber(general),
+        },
+      });
     } catch (error) {
       return sendResponse({
         res,
