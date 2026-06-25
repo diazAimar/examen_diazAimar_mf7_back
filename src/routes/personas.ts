@@ -5,7 +5,7 @@ const personaController = new PersonaController();
 const personasRouter = Router();
 
 personasRouter.get("/", personaController.get);
-personasRouter.get("/:dni", personaController.getByDni);
+personasRouter.get("/:id", personaController.getById);
 personasRouter.post("/", personaController.post);
 personasRouter.patch("/:id", personaController.patch);
 

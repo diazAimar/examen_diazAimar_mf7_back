@@ -4,13 +4,11 @@ import { sendResponse } from "../utils/sendResponse";
 import { handleValidationErrors } from "../utils/handleValidationErrors";
 import {
   createPersonaSchema,
-  dniParamSchema,
   ICreatePersonaSchema,
-  IDniParamSchema,
   IUpdatePersonaSchema,
   updatePersonaSchema,
 } from "../schemas/personas.schema";
-import { IIdParamSchema } from "../schemas/shared.schema";
+import { idParamSchema, IIdParamSchema } from "../schemas/shared.schema";
 
 export class PersonaController {
   get = async (req: Request, res: Response) => {
@@ -26,12 +24,12 @@ export class PersonaController {
     }
   };
 
-  getByDni = async (req: Request<IDniParamSchema, {}, {}>, res: Response) => {
+  getById = async (req: Request<IIdParamSchema, {}, {}>, res: Response) => {
     try {
-      const { dni } = req.params;
+      const { id } = req.params;
 
-      const { error, value } = await dniParamSchema.validate({
-        dni,
+      const { error, value } = await idParamSchema.validate({
+        id,
       });
 
       if (error) {
@@ -41,7 +39,7 @@ export class PersonaController {
       const persona = await db
         .select("*")
         .from("personas")
-        .where("dni", Number(value.dni))
+        .where("id", Number(value.id))
         .first();
 
       if (!persona) {
