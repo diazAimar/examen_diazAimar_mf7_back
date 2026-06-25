@@ -155,13 +155,13 @@ export class OrganismoController {
         return handleValidationErrors(res, error);
       }
 
-      const codigo =
+      const newCodigo =
         "J" +
         CIUDAD_CODIGO[value.ciudad] +
         value.fuero.substring(0, 2).toUpperCase();
 
       const codigoExists = await db("organismos")
-        .where("codigo", codigo)
+        .where("codigo", newCodigo)
         .where("id", "<>", value.id)
         .first();
 
@@ -178,23 +178,38 @@ export class OrganismoController {
         });
       }
 
-      const organismo = await db("organismos")
-        .where("id", id)
-        .update({
-          nombre: value.nombre,
-          caratula: value.caratula,
-          ciudad: value.ciudad,
-          fuero: value.fuero,
-        })
-        .returning("*");
+      const existing = await db("organismos").where("id", id).first();
 
-      if (!organismo) {
+      if (!existing) {
         return sendResponse({
           res: res,
           error: "Organismo inexistente",
           status: 404,
         });
       }
+
+      const oldCodigo = existing.codigo;
+
+      const [organismo] = await db.transaction(async (trx) => {
+        const updated = await trx("organismos")
+          .where("id", id)
+          .update({
+            codigo: newCodigo,
+            nombre: value.nombre,
+            caratula: value.caratula,
+            ciudad: value.ciudad,
+            fuero: value.fuero,
+          })
+          .returning("*");
+
+        if (oldCodigo !== newCodigo) {
+          await trx("expedientes")
+            .where("codigo_organismo", oldCodigo)
+            .update({ codigo_organismo: newCodigo });
+        }
+
+        return updated;
+      });
 
       return sendResponse({ res: res, data: organismo, status: 201 });
     } catch (error) {
