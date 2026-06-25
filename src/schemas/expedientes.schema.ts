@@ -116,12 +116,9 @@ export const createExpedienteSchema = Joi.object<ICreateExpedienteSchema>({
         }),
       }),
     )
-    .min(1)
-    .required()
+    .min(0)
+    .default([])
     .messages({
-      "any.required":
-        "Debe incluir al menos una persona con vinculo DEMANDADO, CONDENADO o VICTIMA",
-      "array.min":
-        "Debe incluir al menos una persona con vinculo DEMANDADO, CONDENADO o VICTIMA",
+      "array.min": "El listado de personas vinculadas no es válido",
     }),
 });
