@@ -108,7 +108,7 @@ export const createExpedienteSchema = Joi.object<ICreateExpedienteSchema>({
   personas: Joi.array()
     .items(
       personaSchema.keys({
-        tipo_vinculo: Joi.number().integer().required().messages({
+        tipo_vinculo: Joi.number().integer().valid(2, 3, 4).required().messages({
           "any.required": "El tipo de vinculo es requerido",
           "number.base": "El tipo de vinculo debe ser un ID numerico",
           "any.only":
