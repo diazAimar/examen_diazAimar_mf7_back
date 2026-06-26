@@ -142,7 +142,6 @@ export class PersonaController {
 
       const dniExists = await db("personas")
         .where("dni", dniNumber)
-        .whereNull("deleted_at")
         .first();
 
       if (dniExists) {
@@ -203,7 +202,6 @@ export class PersonaController {
       const dniExists = await db("personas")
         .where("dni", dniNumber)
         .whereNot("id", value.id)
-        .whereNull("deleted_at")
         .first();
 
       if (dniExists) {

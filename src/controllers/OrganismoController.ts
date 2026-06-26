@@ -164,7 +164,6 @@ export class OrganismoController {
       const codigoExists = await db("organismos")
         .where("codigo", newCodigo)
         .where("id", "<>", value.id)
-        .whereNull("deleted_at")
         .first();
 
       if (codigoExists) {
